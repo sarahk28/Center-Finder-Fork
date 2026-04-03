@@ -1,4 +1,5 @@
 flask
+gunicorn
 serpapi
 google-search-results
 geopy
