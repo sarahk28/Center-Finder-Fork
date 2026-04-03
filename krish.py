@@ -1,9 +1,9 @@
 from serpapi import GoogleSearch
 import json
+import os
 from pprint import pprint
 
-# Your SerpApi API key - Replace this with your actual API key
-API_KEY = "efc8d5213b77fd26c017b940fb91d76e024e425b4a88a1faeab1867c12074100"
+API_KEY = os.environ.get("SERPAPI_KEY")
 
 def search_businesses():
     print("\n=== Google Maps Business Search ===")
