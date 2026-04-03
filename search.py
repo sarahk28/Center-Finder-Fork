@@ -1,7 +1,11 @@
 import math
+import os
 from geopy.geocoders import Nominatim
 from serpapi import GoogleSearch
-from krish import API_KEY
+
+API_KEY = os.environ.get("SERPAPI_KEY")
+if not API_KEY:
+    raise RuntimeError("SERPAPI_KEY environment variable is not set")
 
 
 def geocode_location(city: str, state: str, zip_code: str) -> tuple:
