@@ -1,13 +1,27 @@
+import base64
 import csv
 import io
-import uuid
-from flask import Flask, render_template, request, Response
+from flask import Flask, render_template, request
 from search import geocode_location, run_all_searches
 
 app = Flask(__name__)
 
-# Simple in-memory cache: maps download_id -> categories dict
-_result_cache = {}
+
+def build_csv(school_name, city, state, categories):
+    output = io.StringIO()
+    writer = csv.writer(output)
+    for category, rows in categories.items():
+        writer.writerow([category])
+        writer.writerow(["Name", "Address", "Phone", "Hours", "Website", "Distance"])
+        for row in rows:
+            writer.writerow([
+                row["name"], row["address"], row["phone"],
+                row["hours"], row["website"], row["distance"],
+            ])
+        writer.writerow([])
+    csv_bytes = output.getvalue().encode("utf-8")
+    b64 = base64.b64encode(csv_bytes).decode("utf-8")
+    return f"data:text/csv;base64,{b64}"
 
 
 @app.route("/")
@@ -39,14 +53,8 @@ def generate():
     try:
         lat, lng = geocode_location(city, state, zip_code)
         categories = run_all_searches(lat, lng, max_miles=radius)
-
-        download_id = str(uuid.uuid4())
-        _result_cache[download_id] = {
-            "school_name": school_name,
-            "city": city,
-            "state": state,
-            "categories": categories,
-        }
+        csv_data_uri = build_csv(school_name, city, state, categories)
+        csv_filename = f"{school_name} - {city}, {state}.csv"
 
         return render_template(
             "result.html",
@@ -55,37 +63,11 @@ def generate():
             state=state,
             radius=radius,
             categories=categories,
-            download_id=download_id,
+            csv_data_uri=csv_data_uri,
+            csv_filename=csv_filename,
         )
     except Exception as e:
         return render_template("index.html", error=str(e), form=form_data)
-
-
-@app.route("/download/<download_id>")
-def download(download_id):
-    cached = _result_cache.get(download_id)
-    if not cached:
-        return "Result not found. Please run a new search.", 404
-
-    output = io.StringIO()
-    writer = csv.writer(output)
-
-    for category, rows in cached["categories"].items():
-        writer.writerow([category])
-        writer.writerow(["Name", "Address", "Phone", "Hours", "Website", "Distance"])
-        for row in rows:
-            writer.writerow([
-                row["name"], row["address"], row["phone"],
-                row["hours"], row["website"], row["distance"],
-            ])
-        writer.writerow([])  # blank line between sections
-
-    filename = f"{cached['school_name']} - {cached['city']}, {cached['state']}.csv"
-    return Response(
-        output.getvalue(),
-        mimetype="text/csv",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-    )
 
 
 if __name__ == "__main__":
