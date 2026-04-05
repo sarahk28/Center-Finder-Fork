@@ -149,7 +149,7 @@
     </div>
     {% endfor %}
 
-    <a class="download-link" href="/download/{{ download_id }}">&#8595; Download CSV</a>
+    <a class="download-link" href="{{ csv_data_uri }}" download="{{ csv_filename }}">&#8595; Download CSV</a>
     <a class="back-link" href="/">&#8592; Search Again</a>
   </div>
 </body>
