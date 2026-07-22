@@ -56,6 +56,11 @@ def generate():
         csv_data_uri = build_csv(school_name, city, state, categories)
         csv_filename = f"{school_name} - {city}, {state}.csv"
 
+        centers_list = []
+        for category_name, rows in categories.items():
+            for row in rows:
+                centers_list.append({'name': row['name']})
+
         return render_template(
             "result.html",
             school_name=school_name,
@@ -65,10 +70,10 @@ def generate():
             categories=categories,
             csv_data_uri=csv_data_uri,
             csv_filename=csv_filename,
+            centers=centers_list
         )
     except Exception as e:
-        return render_template("index.html", error=str(e), form=form_data)
-
+        return render_template("index.html", error=str(e), form=request.form)
 
 if __name__ == "__main__":
     app.run(debug=True)

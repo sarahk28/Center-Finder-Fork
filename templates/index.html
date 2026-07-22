@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Afterschool Center Finder</title>
   <style>
+    .results-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+    .results-table th, .results-table td { border-bottom: 1px solid #eee; padding: 10px; text-align: left; }
+    .called-sidebar { margin-top: 24px; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+    .called-sidebar ul { list-style: none; padding: 0; }
+    .called-sidebar li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+    .warm-tag { background: #ffe6e6; color: #d9534f; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-left: 8px; }
+    
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: Arial, sans-serif;
@@ -132,5 +139,39 @@
       </ul>
     </div>
   </div>
+  <script>
+  function markAsCalled(checkbox, rowId) {
+    const row = document.getElementById(rowId);
+    const centerName = row.querySelector('.center-name').innerText;
+    const isWarm = row.querySelector('.warm-checkbox').checked;
+    const sidebarList = document.getElementById('calledList');
+
+    if (checkbox.checked) {
+      row.style.display = 'none';
+
+      const li = document.createElement('li');
+      li.setAttribute('data-row-id', rowId);
+      li.innerHTML = `
+        <span>${centerName} ${isWarm ? '<span class="warm-tag">Warm</span>' : ''}</span>
+        <button type="button" onclick="undoCalled('${rowId}')" style="width: auto; padding: 2px 8px; margin: 0; font-size: 0.75rem;">Undo</button>
+      `;
+      sidebarList.appendChild(li);
+    }
+  }
+
+  function undoCalled(rowId) {
+    const row = document.getElementById(rowId);
+    row.style.display = '';
+    
+    // Uncheck called box in table
+    const checkboxes = row.querySelectorAll('input[type="checkbox"]');
+    if (checkboxes.length > 1) checkboxes[1].checked = false;
+
+    // Remove from sidebar
+    const item = document.querySelector(`li[data-row-id="${rowId}"]`);
+    if (item) item.remove();
+  }
+</script>
+
 </body>
 </html>
