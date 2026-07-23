@@ -167,7 +167,7 @@
                 
                 {% if row.name != "No results found" %}
                 <td class="text-center">
-                  <input type="checkbox" class="warm-checkbox">
+                  <input type="checkbox" class="warm-checkbox" onchange="toggleWarm(this, '{{ row_id }}')">
                 </td>
                 <td class="text-center">
                   <input type="checkbox" class="called-checkbox" onchange="markAsCalled(this, '{{ row_id }}')">
@@ -191,24 +191,36 @@
   </div>
   
   <script>
+    function toggleWarm(checkbox, rowId) {
+      const row = document.getElementById(rowId);
+      
+      if (checkbox.checked) {
+        const calledBox = row.querySelector('.called-checkbox');
+        if (calledBox) calledBox.checked = false;
+
+        row.parentNode.prepend(row);
+      }
+    }
+
     function markAsCalled(checkbox, rowId) {
       const row = document.getElementById(rowId);
-      const centerName = row.querySelector('.center-name').innerText;
-      const isWarm = row.querySelector('.warm-checkbox')?.checked;
-      const sidebarList = document.getElementById('calledList');
-
+      
       if (checkbox.checked) {
+        const warmBox = row.querySelector('.warm-checkbox');
+        if (warmBox) warmBox.checked = false;
+
+        const centerName = row.querySelector('.center-name').innerText;
+        const sidebarList = document.getElementById('calledList');
+
         row.style.display = 'none';
 
         const li = document.createElement('li');
         li.setAttribute('data-row-id', rowId);
         li.innerHTML = `
-          <div>
-            ${centerName}
-            ${isWarm ? '<span class="warm-tag">🔥 Warm</span>' : ''}
-          </div>
+          <div>${centerName}</div>
           <button type="button" class="btn-undo" onclick="undoCalled('${rowId}')">Undo</button>
         `;
+        
         sidebarList.appendChild(li);
       }
     }
